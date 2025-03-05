@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIVI CHOUX</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: var(--box-shadow);
+            border-radius: 0 0 10px 10px;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .video-container {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+        }
+
+        .video-feed {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .stat-item {
+            background-color: var(--light-color);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .detection-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .detection-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detection-item:last-child {
+            border-bottom: none;
+        }
+
+        .object-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .color-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .confidence {
+            background-color: var(--light-color);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .high-confidence {
+            color: var(--secondary-color);
+        }
+
+        .medium-confidence {
+            color: var(--warning-color);
+        }
+
+        .low-confidence {
+            color: var(--danger-color);
+        }
+
+        .settings {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .confidence-slider {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .no-detection {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>VIVI CHOUX</h1>
+        <div class="subtitle">Real-time Object Detection</div>
+    </header>
+
+    <div class="container">
+        <div class="dashboard">
+            <div class="video-container">
+                <img src="/video" class="video-feed" alt="Live video feed">
+            </div>
+
+            <div class="sidebar">
+                <div class="card">
+                    <h2 class="card-title">Detection Stats</h2>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="fps">0</div>
+                            <div class="stat-label">FPS</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="object-count">0</div>
+                            <div class="stat-label">Objects</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="people-count">0</div>
+                            <div class="stat-label">People</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="avg-confidence">0%</div>
+                            <div class="stat-label">Avg. Confidence</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2 class="card-title">Detected Objects</h2>
+                    <div class="detection-list" id="detection-list">
+                        <div class="no-detection">No objects detected</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2 class="card-title">Settings</h2>
+                    <div class="settings">
+                        <div class="setting-item">
+                            <label class="toggle">
+                                <input type="checkbox" id="show-fps">
+                                <span class="slider"></span>
+                            </label>
+                            <span>Show FPS</span>
+                        </div>
+                        <div class="setting-item">
+                            <label class="toggle">
+                                <input type="checkbox" id="dark-mode">
+                                <span class="slider"></span>
+                            </label>
+                            <span>Dark Mode</span>
+                        </div>
+                        <div class="setting-item">
+                            <label class="toggle">
+                                <input type="checkbox" id="fancy-boxes">
+                                <span class="slider"></span>
+                            </label>
+                            <span>Fancy Boxes</span>
+                        </div>
+                        <div class="setting-item">
+                            <label class="toggle">
+                                <input type="checkbox" id="hide-labels">
+                                <span class="slider"></span>
+                            </label>
+                            <span>Hide Labels</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="confidence">Confidence Threshold: <span id="confidence-value">0.5</span></label>
+                        <input type="range" id="confidence" class="confidence-slider" min="0.1" max="0.9" step="0.05" value="0.5">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch and update detection data
+        function updateDetections() {
+            fetch('/detections')
+                .then(response => response.json())
+                .then(data => {
+                    const detectionList = document.getElementById('detection-list');
+                    const objects = data.detections;
+                    
+                    // Update object count
+                    document.getElementById('object-count').textContent = objects.length;
+                    
+                    // Count people
+                    const peopleCount = objects.filter(obj => obj.class === 'person').length;
+                    document.getElementById('people-count').textContent = peopleCount;
+                    
+                    // Calculate average confidence
+                    let avgConfidence = 0;
+                    if (objects.length > 0) {
+                        avgConfidence = objects.reduce((sum, obj) => sum + obj.confidence, 0) / objects.length;
+                    }
+                    document.getElementById('avg-confidence').textContent = `${(avgConfidence * 100).toFixed(0)}%`;
+                    
+                    // Update detection list
+                    if (objects.length === 0) {
+                        detectionList.innerHTML = '<div class="no-detection">No objects detected</div>';
+                    } else {
+                        detectionList.innerHTML = '';
+                        objects.forEach(obj => {
+                            // Generate a consistent color based on the class name
+                            const hash = obj.class.split('').reduce((a, b) => {
+                                a = ((a << 5) - a) + b.charCodeAt(0);
+                                return a & a;
+                            }, 0);
+                            const color = `hsl(${Math.abs(hash) % 360}, 70%, 50%)`;
+                            
+                            // Determine confidence class
+                            let confidenceClass = 'low-confidence';
+                            if (obj.confidence > 0.7) {
+                                confidenceClass = 'high-confidence';
+                            } else if (obj.confidence > 0.5) {
+                                confidenceClass = 'medium-confidence';
+                            }
+                            
+                            const item = document.createElement('div');
+                            item.className = 'detection-item';
+                            item.innerHTML = `
+                                <div class="object-name">
+                                    <div class="color-indicator" style="background-color: ${color}"></div>
+                                    ${obj.class}
+                                </div>
+                                <div class="confidence ${confidenceClass}">${(obj.confidence * 100).toFixed(0)}%</div>
+                            `;
+                            detectionList.appendChild(item);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching detections:', error));
+        }
+        
+        // Function to update FPS
+        function updateFPS() {
+            fetch('/fps')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('fps').textContent = data.fps.toFixed(1);
+                })
+                .catch(error => console.error('Error fetching FPS:', error));
+        }
+        
+        // Function to load current settings
+        function loadSettings() {
+            fetch('/settings')
+                .then(response => response.json())
+                .then(data => {
+                    const config = data.config;
+                    document.getElementById('show-fps').checked = config.show_fps;
+                    document.getElementById('dark-mode').checked = config.dark_mode;
+                    document.getElementById('fancy-boxes').checked = config.fancy_boxes;
+                    document.getElementById('hide-labels').checked = config.hide_labels;
+                    
+                    const confidenceSlider = document.getElementById('confidence');
+                    confidenceSlider.value = config.confidence_threshold;
+                    document.getElementById('confidence-value').textContent = config.confidence_threshold;
+                })
+                .catch(error => console.error('Error loading settings:', error));
+        }
+        
+        // Function to update settings
+        function updateSetting(setting, value) {
+            const settings = {};
+            settings[setting] = value;
+            
+            fetch('/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(settings),
+            })
+            .then(response => response.json())
+            .then(data => console.log('Settings updated:', data))
+            .catch(error => console.error('Error updating settings:', error));
+        }
+        
+        // Set up event listeners for settings changes
+        document.getElementById('show-fps').addEventListener('change', function(e) {
+            updateSetting('show_fps', e.target.checked);
+        });
+        
+        document.getElementById('dark-mode').addEventListener('change', function(e) {
+            updateSetting('dark_mode', e.target.checked);
+        });
+        
+        document.getElementById('fancy-boxes').addEventListener('change', function(e) {
+            updateSetting('fancy_boxes', e.target.checked);
+        });
+        
+        document.getElementById('hide-labels').addEventListener('change', function(e) {
+            updateSetting('hide_labels', e.target.checked);
+        });
+        
+        document.getElementById('confidence').addEventListener('input', function(e) {
+            const value = parseFloat(e.target.value);
+            document.getElementById('confidence-value').textContent = value.toFixed(2);
+            updateSetting('confidence_threshold', value);
+        });
+        
+        // Initial load of settings
+        loadSettings();
+        
+        // Set up polling for updates
+        setInterval(updateDetections, 500);
+        setInterval(updateFPS, 1000);
+    </script>
+</body>
+</html>
